@@ -23,6 +23,6 @@ default = []
 [lib]
 crate-type = ["cdylib", "lib"]
 
-[workspace]
+# [workspace]
 # Set the package crate as its own empty workspace, to hide it from any potential ancestor workspace
 # Remove this [workspace] section if you intend the package to be part of a Cargo workspace

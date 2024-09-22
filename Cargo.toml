@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "scrypto_101/my_first_package",
+    "scrypto_101/radiswap",
+    "scrypto_101/escrow",
+    "scrypto_101/token_sale",
+]
