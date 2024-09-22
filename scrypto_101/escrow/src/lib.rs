@@ -14,7 +14,25 @@ mod escrow {
             requested_resource: EscrowResourceSpecifier,
             offered_resource: Bucket,
         ) -> (Global<Escrow>, NonFungibleBucket) {
-            todo!();
+            let escrow_badge: NonFungibleBucket =
+                ResourceBuilder::new_integer_non_fungible::<EscrowBadge>(OwnerRole::None)
+                    .mint_initial_supply(vec![(
+                        IntegerNonFungibleLocalId::new(1),
+                        EscrowBadge {
+                            offered_resource: offered_resource.resource_address(),
+                        },
+                    )]);
+            // let requested_resource_bucket: Bucket = ResourceBuilder::new
+            let escrow_inst: Global<Escrow> = Self {
+                offered_resource: Vault::with_bucket(offered_resource),
+                requested_resource_vault: Vault::new(requested_resource.get_resource_address()),
+                requested_resource: requested_resource,
+                escrow_nft: escrow_badge.resource_address(),
+            }
+            .instantiate()
+            .prepare_to_globalize(OwnerRole::None)
+            .globalize();
+            (escrow_inst, escrow_badge)
         }
 
         pub fn exchange(&mut self, bucket_of_resource: Bucket) -> Bucket {
