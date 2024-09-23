@@ -36,11 +36,25 @@ mod escrow {
         }
 
         pub fn exchange(&mut self, bucket_of_resource: Bucket) -> Bucket {
-            assert!(
-                bucket_of_resource.resource_address()
-                    == self.requested_resource_vault.resource_address(),
+            assert_eq!(
+                bucket_of_resource.resource_address(), self.requested_resource_vault.resource_address(),
                 "The provided resource address for exchange does not match the requested resource address"
             );
+            match &self.requested_resource {
+                EscrowResourceSpecifier::Fungible {
+                    resource_address: _,
+                    amount,
+                } => {
+                    assert_eq!(bucket_of_resource.amount(), *amount, "The passed in fungible bucket amount does not match with the requested amount.");
+                }
+                EscrowResourceSpecifier::NonFungible {
+                    resource_address: _,
+                    non_fungible_local_id,
+                } => assert_eq!(
+                    *non_fungible_local_id,
+                    bucket_of_resource.as_non_fungible().non_fungible_local_id(), "The passed in non fungible local id does not match with the requested non fungible local id."
+                ),
+            }
 
             self.requested_resource_vault.put(bucket_of_resource);
 
@@ -48,7 +62,9 @@ mod escrow {
         }
 
         pub fn withdraw_resource(&mut self, escrow_nft: NonFungibleBucket) -> Bucket {
-            todo!();
+            assert!(escrow_nft.resource_address() == self.escrow_nft, "The passed in escrow NFT badge does not match the required one to withdraw the resource.");
+            // assert!(self.)
+            self.requested_resource_vault.take_all()
         }
 
         pub fn cancel_escrow(&mut self, escrow_nft: NonFungibleBucket) -> Bucket {
