@@ -36,7 +36,15 @@ mod escrow {
         }
 
         pub fn exchange(&mut self, bucket_of_resource: Bucket) -> Bucket {
-            todo!();
+            assert!(
+                bucket_of_resource.resource_address()
+                    == self.requested_resource_vault.resource_address(),
+                "The provided resource address for exchange does not match the requested resource address"
+            );
+
+            self.requested_resource_vault.put(bucket_of_resource);
+
+            self.offered_resource.take_all()
         }
 
         pub fn withdraw_resource(&mut self, escrow_nft: NonFungibleBucket) -> Bucket {
