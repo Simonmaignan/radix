@@ -1,0 +1,21 @@
+CALL_METHOD 
+    Address("account_sim1c956qr3kxlgypxwst89j9yf24tjc7zxd4up38x37zr6q4jxdx9rhma") 
+    "withdraw"
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("2");
+
+TAKE_FROM_WORKTOP
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3")
+    Decimal("2")
+    Bucket("account_a_bucket");
+    
+CALL_FUNCTION
+  Address("package_sim1pk3cmat8st4ja2ms8mjqy2e9ptk8y6cx40v4qnfrkgnxcp2krkpr92")
+  "Escrow"
+  "instantiate_escrow"
+  Enum<0u8>(
+    Address("resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3"),
+    Decimal("2")
+  )
+  Bucket("account_a_bucket")
+;

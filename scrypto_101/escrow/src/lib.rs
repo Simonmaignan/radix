@@ -2,6 +2,13 @@ use scrypto::prelude::*;
 
 #[blueprint]
 mod escrow {
+    // enable_method_auth! {
+    // methods {
+    //     exchange => PUBLIC;
+    //     withdraw_resource => restrict_to: [OWNER];
+    //     cancel_escrow => restrict_to: [OWNER];
+    // }
+    // }
     struct Escrow {
         requested_resource: EscrowResourceSpecifier,
         offered_resource: Vault,
@@ -16,13 +23,16 @@ mod escrow {
         ) -> (Global<Escrow>, NonFungibleBucket) {
             let escrow_badge: NonFungibleBucket =
                 ResourceBuilder::new_integer_non_fungible::<EscrowBadge>(OwnerRole::None)
+                    .metadata(metadata!(init{"name" => "Escrow Badge", locked;}))
                     .mint_initial_supply(vec![(
                         IntegerNonFungibleLocalId::new(1),
                         EscrowBadge {
                             offered_resource: offered_resource.resource_address(),
                         },
                     )]);
-            // let requested_resource_bucket: Bucket = ResourceBuilder::new
+
+            let owner_access_rule: AccessRule = rule!(require(escrow_badge.resource_address()));
+
             let escrow_inst: Global<Escrow> = Self {
                 offered_resource: Vault::with_bucket(offered_resource),
                 requested_resource_vault: Vault::new(requested_resource.get_resource_address()),
@@ -30,8 +40,19 @@ mod escrow {
                 escrow_nft: escrow_badge.resource_address(),
             }
             .instantiate()
-            .prepare_to_globalize(OwnerRole::None)
+            .prepare_to_globalize(OwnerRole::Fixed(owner_access_rule))
+            .metadata(metadata!(roles {
+                metadata_setter => OWNER;
+                metadata_setter_updater => OWNER;
+                metadata_locker => OWNER;
+                metadata_locker_updater => OWNER;
+            },
+            init {
+                "name" => "Escrow Component", locked;
+                "description" => "A component that allows trustless exchange.", locked;
+            }))
             .globalize();
+
             (escrow_inst, escrow_badge)
         }
 
@@ -65,7 +86,7 @@ mod escrow {
             assert_eq!(escrow_nft.resource_address(), self.escrow_nft, "The passed in escrow NFT badge does not match the required one to withdraw the resource.");
             assert!(
                 !self.requested_resource_vault.is_empty(),
-                "The requested resource vault is empty. The exchange has taken place yet."
+                "The requested resource vault is empty. The exchange has not taken place yet."
             );
             self.requested_resource_vault.take_all()
         }
