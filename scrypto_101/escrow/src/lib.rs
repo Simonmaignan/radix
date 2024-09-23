@@ -62,8 +62,11 @@ mod escrow {
         }
 
         pub fn withdraw_resource(&mut self, escrow_nft: NonFungibleBucket) -> Bucket {
-            assert!(escrow_nft.resource_address() == self.escrow_nft, "The passed in escrow NFT badge does not match the required one to withdraw the resource.");
-            // assert!(self.)
+            assert_eq!(escrow_nft.resource_address(), self.escrow_nft, "The passed in escrow NFT badge does not match the required one to withdraw the resource.");
+            assert!(
+                !self.requested_resource_vault.is_empty(),
+                "The requested resource vault is empty. The exchange has taken place yet."
+            );
             self.requested_resource_vault.take_all()
         }
 
